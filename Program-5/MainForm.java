@@ -144,6 +144,7 @@ public class MainForm extends JFrame {
 		if (count == size * size) {
 			JOptionPane.showMessageDialog(this, "You Win!", "CONGRATULATIONS", JOptionPane.INFORMATION_MESSAGE);			
 			System.out.println("You Win! You had " + count + " moves.");
+			new_game();
 		}
 	}
 	

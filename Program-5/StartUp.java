@@ -33,6 +33,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.ImageIcon;
 import java.net.URL;
+import javax.swing.JCheckBox;
 
 public class StartUp extends JFrame {
 
@@ -48,7 +49,7 @@ public class StartUp extends JFrame {
 					URL url = StartUp.class.getResource("/knight.png");
 					ImageIcon knight = new ImageIcon(url);
 					StartUp frame = new StartUp();
-					frame.add(new JLabel(knight));
+					frame.getContentPane().add(new JLabel(knight));
 					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					frame.setLocationRelativeTo(null);
 					frame.setVisible(true);
@@ -65,7 +66,7 @@ public class StartUp extends JFrame {
 	public StartUp() {
 		setTitle("Knight's Journey");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 200, 240);
+		setBounds(100, 100, 240, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -78,24 +79,26 @@ public class StartUp extends JFrame {
 		
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.CENTER);
-		String[] comboData = {"4", "5", "6", "7", "8"};
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		String[] comboData = {"4", "5", "6", "7", "8"};
 		
 		JPanel panel_south = new JPanel();
 		contentPane.add(panel_south, BorderLayout.SOUTH);
-		panel_south.setPreferredSize(new Dimension(200, 64));
+		panel_south.setPreferredSize(new Dimension(240, 100));
 		
 		JLabel lblDimension = new JLabel("Dimension:");
 		comboBox = new JComboBox(comboData);		
+		showVisited = new JCheckBox("Easy Mode: Show Visited Grids");
 		JButton btnNewGame = new JButton("New Game");
 		panel_south.add(lblDimension);
-		panel_south.add(comboBox);
+		panel_south.add(comboBox);		
+		panel_south.add(showVisited);
 		panel_south.add(btnNewGame);
 		btnNewGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int size = Integer.parseInt((String)comboBox.getSelectedItem());
 		        form = new MainForm();
-		        form.Open(size);
+		        form.Open(size, showVisited.isSelected());
 		        System.out.println("Starts the " + size + "x" + size + " game.");
 			}
 		});
@@ -103,4 +106,5 @@ public class StartUp extends JFrame {
 	
 	private MainForm form;
 	private JComboBox comboBox;
+	private JCheckBox showVisited;
 }

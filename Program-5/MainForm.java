@@ -20,6 +20,7 @@ package knights_journey;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
@@ -36,13 +37,15 @@ import java.net.URL;
 
 public class MainForm extends JFrame {
 
-	public static int size = 8;
-
+	private static int size = 8;
+	private static Boolean showVisited = false;
+	
 	/**
 	 * Launch the application.
 	 */
-	public static void Open(int s) {
+	public static void Open(int s, Boolean v) {
 		size = s;
+		showVisited = v;
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -62,9 +65,10 @@ public class MainForm extends JFrame {
 	/**
 	 * Resets the game.
 	 */
-	public void new_game() {
+	public void newGame() {
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
+				buttons[i][j].setEnabled(true);
 				buttons[i][j].unvisit();
 			}
 		}
@@ -75,9 +79,48 @@ public class MainForm extends JFrame {
 	}
 	
 	/**
+	 * Visits selected grid if possible.
+	 */
+	private void visit(int r, int c) {
+		seeKnightIn(r - 2, c - 1);
+		seeKnightIn(r - 2, c + 1);
+		seeKnightIn(r + 2, c - 1);
+		seeKnightIn(r + 2, c + 1);
+		seeKnightIn(r - 1, c - 2);
+		seeKnightIn(r - 1, c + 2);
+		seeKnightIn(r + 1, c - 2);
+		seeKnightIn(r + 1, c + 2);
+		if (!valid) {
+			Toolkit.getDefaultToolkit().beep();			
+		}
+		else if (buttons[r][c].is_visited()) {
+			lose();
+		}
+		else {
+			buttons[r][c].visit();
+			valid = false;
+			count++;
+			update();
+			if (count == size * size) {
+				win();
+			}
+		}
+	}
+	
+	/**
+	 * see whether the knight is in a given grid.
+	 */
+	private void seeKnightIn(int r, int c) {
+		if (r >= 0 && c >= 0 && r < size && c < size && buttons[r][c].is_knight()) {
+			valid = true;
+			buttons[r][c].leave();
+		}
+	}
+
+	/**
 	 * Shows where the current location of the knight is.
 	 */
-	public void update() {
+	private void update() {
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
 				if (buttons[i][j].is_knight()) {
@@ -86,70 +129,52 @@ public class MainForm extends JFrame {
 				else {
 					buttons[i][j].setIcon(null);
 				}
+				if (showVisited) {
+					if (buttons[i][j].is_visited() && !buttons[i][j].is_knight()) {
+						buttons[i][j].setBackground(gray);					
+					}
+					else {
+						if ((i + j) % 2 == 0) {
+							buttons[i][j].setBackground(beige);
+						}
+						else {
+							buttons[i][j].setBackground(brown);				
+						}
+					}
+				}
 			}
 		}		
 	}
-	
+
 	/**
-	 * Visits selected grid if possible.
+	 * Ends the game with lose.
 	 */
-	public void visit(int r, int c) {
-		if (buttons[r][c].is_visited()) {
-			JOptionPane.showMessageDialog(this, "You Lose!", "GAME OVER", JOptionPane.INFORMATION_MESSAGE);
-			System.out.println("You Lose! You had " + count + " moves.");
-		}
-		else {
-			if (r - 2 >= 0 && c - 1 >= 0 && buttons[r - 2][c - 1].is_knight()) {
-				valid = true;
-				buttons[r - 2][c - 1].leave();
-			}
-			if (r - 2 >= 0 && c + 1 < size && buttons[r - 2][c + 1].is_knight()) {
-				valid = true;
-				buttons[r - 2][c + 1].leave();
-			}
-			if (r + 2 < size && c - 1 >= 0 && buttons[r + 2][c - 1].is_knight()) {
-				valid = true;
-				buttons[r + 2][c - 1].leave();
-			}
-			if (r + 2 < size && c + 1 < size && buttons[r + 2][c + 1].is_knight()) {
-				valid = true;
-				buttons[r + 2][c + 1].leave();
-			}
-			if (r - 1 >= 0 && c - 2 >= 0 && buttons[r - 1][c - 2].is_knight()) {
-				valid = true;
-				buttons[r - 1][c - 2].leave();
-			}
-			if (r - 1 >= 0 && c + 2 < size && buttons[r - 1][c + 2].is_knight()) {
-				valid = true;
-				buttons[r - 1][c + 2].leave();
-			}
-			if (r + 1 < size && c - 2 >= 0 && buttons[r + 1][c - 2].is_knight()) {
-				valid = true;
-				buttons[r + 1][c - 2].leave();
-			}
-			if (r + 1 < size && c + 2 < size && buttons[r + 1][c + 2].is_knight()) {
-				valid = true;
-				buttons[r + 1][c + 2].leave();
-			}
-			if (valid) {
-				buttons[r][c].visit();
-				valid = false;
-				count++;
-			}
-			else {
-				JOptionPane.showMessageDialog(this, "Invalid move!", "INVALID", JOptionPane.INFORMATION_MESSAGE);				
-			}
-		}
-		update();
-		if (count == size * size) {
-			JOptionPane.showMessageDialog(this, "You Win!", "CONGRATULATIONS", JOptionPane.INFORMATION_MESSAGE);			
-			System.out.println("You Win! You had " + count + " moves.");
-			new_game();
-		}
+	private void lose() {
+		Toolkit.getDefaultToolkit().beep();
+		JOptionPane.showMessageDialog(this, "You Lose!", "GAME OVER", JOptionPane.INFORMATION_MESSAGE);
+		System.out.println("You Lose! You had " + count + " moves.");
+		gameOver();
 	}
 	
-	public void form() {
-		
+	/**
+	 * Ends the game with win.
+	 */
+	private void win() {
+		Toolkit.getDefaultToolkit().beep();
+		JOptionPane.showMessageDialog(this, "You Win!", "CONGRATULATIONS", JOptionPane.INFORMATION_MESSAGE);			
+		System.out.println("You Win! You had " + count + " moves.");
+		gameOver();		
+	}
+	
+	/**
+	 * Ends the game.
+	 */
+	private void gameOver() {
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				buttons[i][j].setEnabled(false);
+			}
+		}		
 	}
 	
 	/**
@@ -189,17 +214,25 @@ public class MainForm extends JFrame {
 			}
 		}
 		
-		new_game();
+		newGame();
 				
 		JPanel panel_bottom = new JPanel();
 		contentPane.add(panel_bottom, BorderLayout.SOUTH);
 		JButton btnNewGame = new JButton("New Game");
 		btnNewGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new_game();
+				newGame();
 			}
 		});
-		panel_bottom.add(btnNewGame);
+		JButton btnHome = new JButton("Home");
+		btnHome.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Go back to home");				
+				dispose();
+			}
+		});
+		panel_bottom.add(btnNewGame);		
+		panel_bottom.add(btnHome);
 	}
 
 	/**
@@ -270,8 +303,9 @@ public class MainForm extends JFrame {
 	private int count;
 	private Grid[][] buttons = new Grid[size][size];
 	private Color beige = new Color(255, 255, 204);
-	private Color brown = new Color(204, 153, 102);	
-	private static ImageIcon knight;
+	private Color brown = new Color(204, 153, 102);
+	private Color gray = new Color(204, 204, 204);
 	private JPanel contentPane;
+	private static ImageIcon knight;
 
 }
